@@ -6,9 +6,34 @@ class HashTableEntry:
     Linked List hash table key/value pair
     """
     def __init__(self, key, value):
+
         self.key = key
         self.value = value
         self.next = None
+        return
+
+    def has_next(self) -> bool:
+        """returns true if there is another element in the chain
+
+        Returns:
+            bool: [description]
+        """
+        if self.next == None:
+            return False
+        else:
+            return True
+
+    def add(self, node: HashTableEntry) -> None:
+        """adds a Node to the Hashtable collion chain
+
+        Args:
+            node (HashTableEntry): the item to add to the head of the chain
+
+        Returns:
+            None
+        """
+        self.next = node
+        return None
 
 
 # Hash table can't have fewer than this many slots
@@ -25,6 +50,7 @@ class HashTable:
     def __init__(self, capacity):
         self.data = [None] * capacity
         self.capacity = capacity
+        self.occupied = 0
         return
 
     def get_num_slots(self):
@@ -45,6 +71,13 @@ class HashTable:
 
         Implement this.
         """
+        if self.occupied != 0:
+            return self.capacity / self.occupied
+        else:
+            # logically if there are no elements then the load is %0
+            return 0
+
+# [hashing algos]
 
     def fnv1(self, key):
         """
@@ -55,16 +88,20 @@ class HashTable:
         # the FNV-1 hash from
         # https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV-1_hash
 
+        # factors used to calculate FNV-1 Hash
         FNV_offset = 0xcbf29ce484222325
         FNV_prime = 0x100000001b3
-        hash_hex = 0x00
+        # init a var to hold the hashed value for the key
+        hash_hex = None
+        # wrap in a try/catch to handle brokenness
         try:
             h = FNV_offset
             h = h * FNV_prime
             for b in self.data[key]:
-                hash_hex.conjugate(operator.xor(h, b))
-            return hash_hex
+                hash_hex = operator.xor(h, b)
+            return hash_hex & 0xffffffff
         except Exception as e:
+            breakpoint()
             print(e)
             return None
 
@@ -74,10 +111,18 @@ class HashTable:
 
         Implement this, and/or FNV-1.
         """
-        hash = 5381
-        for byte in self.data[key]:
-            hash = ((hash << 5) + hash) + ord(byte)
-        return hash & 0xFFFFFFFF
+        try:
+            hash = 5381
+            for byte in key:
+                hash = ((hash << 5) + hash) + ord(byte)
+            return hash & 0xFFFFFFFF
+        except Exception as e:
+            print(e)
+            breakpoint()
+            return None
+
+
+# [end hashing]
 
     def hash_index(self, key):
         """
@@ -89,13 +134,23 @@ class HashTable:
 
     def put(self, key, value):
         """
-        Store the value with the given key.
-
-        Hash collisions should be handled with Linked List Chaining.
-
-        Implement this.
+            A function that takes the key and stores the value at the hashed
+            index for that key
         """
-        k = 
+        # going to need the hash of the key
+        k = self.fnv1(key)
+
+        # if there is already an entire then tack on another entry on the chain
+        # otherwise start a new chain
+        if self.data[k] is not None:
+            # add the kv pair to the head of the root node in the linked list
+            self.data[k].next = HashTableEntry(key, value)
+        else:
+            # create a new linked list at the index in the hashtable, this will
+            # cache collisions
+            self.data[k] = HashTableEntry(key, value)
+        self.occupied += 1
+        return self.data[k]
 
     def delete(self, key):
         """
@@ -105,7 +160,11 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        k = self.fnv1(key)
+
+        # use the list function to remove the entry at the key hash
+        self.data.remove(self.data[k])
+        self.occupied -= 1
 
     def get(self, key):
         """
@@ -115,7 +174,7 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        return self.data[self.fnv1(key)]
 
     def resize(self, new_capacity):
         """
@@ -124,8 +183,34 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        # not %100 what this is going to look like so let me wireframe it
+        # reinit that object with a new size
+        # take all of the data entries and recompute the key's hash
+        # iterate through the data list's and copy them to the new
+        # object using new hashed indexes
+        canvas = HashTable(new_capacity)
+        assert self.capacity > canvas.capacity
 
+        # iterate through the hashtable and for each entry see if there is a
+        # linked list if there is not then put the hashtable entry into the
+        # new table this process is going to be O(n + k) runtime because:
+        #           n
+        #   [0]     |
+        #   [0]     V
+        #   [0,1,2] --> k
+        for i in self.data:
+            # rt + O(n) of the list object backbone
+            if i.next == None:
+                canvas.put(i.key, i.value)
+            else:
+                # if there is another object then we want to transverse the
+                # linked list and transfer the items to the new hashtable
+                # rt + O(n) of the length of the linked list
+                k = i
+                while k.next is not None:
+                    canvas.put(k.key, k.value)
+                    k = k.next
+        return canvas
 
 if __name__ == "__main__":
     ht = HashTable(8)
