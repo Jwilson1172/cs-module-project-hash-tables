@@ -1,3 +1,6 @@
+import operator
+
+
 class HashTableEntry:
     """
     Linked List hash table key/value pair
@@ -19,10 +22,10 @@ class HashTable:
 
     Implement this.
     """
-
     def __init__(self, capacity):
-        # Your code here
-
+        self.data = [None] * capacity
+        self.capacity = capacity
+        return
 
     def get_num_slots(self):
         """
@@ -34,8 +37,7 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
-
+        return len(self.data)
 
     def get_load_factor(self):
         """
@@ -43,8 +45,6 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
-
 
     def fnv1(self, key):
         """
@@ -52,9 +52,21 @@ class HashTable:
 
         Implement this, and/or DJB2.
         """
+        # the FNV-1 hash from
+        # https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV-1_hash
 
-        # Your code here
-
+        FNV_offset = 0xcbf29ce484222325
+        FNV_prime = 0x100000001b3
+        hash_hex = 0x00
+        try:
+            h = FNV_offset
+            h = h * FNV_prime
+            for b in self.data[key]:
+                hash_hex.conjugate(operator.xor(h, b))
+            return hash_hex
+        except Exception as e:
+            print(e)
+            return None
 
     def djb2(self, key):
         """
@@ -62,8 +74,10 @@ class HashTable:
 
         Implement this, and/or FNV-1.
         """
-        # Your code here
-
+        hash = 5381
+        for byte in self.data[key]:
+            hash = ((hash << 5) + hash) + ord(byte)
+        return hash & 0xFFFFFFFF
 
     def hash_index(self, key):
         """
@@ -81,8 +95,7 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
-
+        k = 
 
     def delete(self, key):
         """
@@ -94,7 +107,6 @@ class HashTable:
         """
         # Your code here
 
-
     def get(self, key):
         """
         Retrieve the value stored with the given key.
@@ -105,7 +117,6 @@ class HashTable:
         """
         # Your code here
 
-
     def resize(self, new_capacity):
         """
         Changes the capacity of the hash table and
@@ -114,7 +125,6 @@ class HashTable:
         Implement this.
         """
         # Your code here
-
 
 
 if __name__ == "__main__":
