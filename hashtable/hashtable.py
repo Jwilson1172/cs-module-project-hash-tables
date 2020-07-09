@@ -23,7 +23,7 @@ class HashTableEntry:
         else:
             return True
 
-    def add(self, node: HashTableEntry) -> None:
+    def add(self, node) -> None:
         """adds a Node to the Hashtable collion chain
 
         Args:

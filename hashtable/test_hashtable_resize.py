@@ -1,10 +1,9 @@
 import unittest
 
-from hashtable import HashTable
+from hashtable import HashTable, HashTableEntry
 
 
 class TestHashTable(unittest.TestCase):
-
     def test_hash_table_insertion_and_retrieval(self):
         ht = HashTable(8)
 
