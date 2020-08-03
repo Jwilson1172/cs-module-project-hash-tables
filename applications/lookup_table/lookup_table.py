@@ -14,8 +14,21 @@ def slowfun(x, y):
     Rewrite slowfun_too_slow() in here so that the program produces the same
     output, but completes quickly instead of taking ages to run.
     """
-    # Your code here
 
+    cache = {}
+    # checks if tuple exist's in cache if so returned the cached version
+    if (x, y) in cache:
+        return cache[(x, y)]
+    # otherwise record the result of the computation in the cache
+    # with the key of tuple
+    else:
+        v = math.pow(x, y)
+        v = math.factorial(v)
+        v //= (x + y)
+        v %= 982451653
+        cache[(x, y)] = v
+
+    return v
 
 
 # Do not modify below this line!
