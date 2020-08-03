@@ -1,4 +1,5 @@
 import operator
+from errors import InsufficientCapacityError
 
 
 class HashTableEntry:
@@ -48,6 +49,12 @@ class HashTable:
     Implement this.
     """
     def __init__(self, capacity):
+        # check if we can init the hashtable with the given capacity
+        if capacity < MIN_CAPACITY:
+            raise InsufficientCapacityError(
+                f"minimum capacity of the hash table is {MIN_CAPACITY} please use this or change MIN_CAPACITY variable in the code"
+            )
+
         self.data = [None] * capacity
         self.capacity = capacity
         self.occupied = 0
@@ -88,21 +95,22 @@ class HashTable:
         # the FNV-1 hash from
         # https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV-1_hash
 
-        # factors used to calculate FNV-1 Hash
-        FNV_offset = 0xcbf29ce484222325
-        FNV_prime = 0x100000001b3
-        # init a var to hold the hashed value for the key
-        hash_hex = None
-        # wrap in a try/catch to handle brokenness
         try:
-            h = FNV_offset
-            h = h * FNV_prime
-            for b in self.data[key]:
-                hash_hex = operator.xor(h, b)
-            return hash_hex & 0xffffffff
+        # Your code here
+            fnv_offset_basis = 14695981039346656037
+            fnv_prime = 1099511628211
+            hash_value = fnv_offset_basis
+
+            for byte in key.encode():
+                hash_value = hash_value * fnv_prime
+                hash_value = hash_value ^ byte
+
+            return hash_value & 0xffffffff
+        # add a pdb breakpoint shell to debug FNV function
         except Exception as e:
-            breakpoint()
             print(e)
+            print("FNV debug shell\n")
+            breakpoint()
             return None
 
     def djb2(self, key):
@@ -111,13 +119,23 @@ class HashTable:
 
         Implement this, and/or FNV-1.
         """
+
         try:
+            # start the hash = to the starting value required for djb2
             hash = 5381
-            for byte in key:
+
+            # inter through the bytes
+            for byte in key.encode('utf-8'):
+                # hash the current byte
                 hash = ((hash << 5) + hash) + ord(byte)
-            return hash & 0xFFFFFFFF
+
+            # return the hash resized to 32-bytes as per the spec
+            return hash & 0xffffffff
+
+        # if something goes wrong open a pdb term
         except Exception as e:
             print(e)
+            print("djb2 debug shell:\n")
             breakpoint()
             return None
 
@@ -150,7 +168,7 @@ class HashTable:
             # cache collisions
             self.data[k] = HashTableEntry(key, value)
         self.occupied += 1
-        return self.data[k]
+        return
 
     def delete(self, key):
         """
