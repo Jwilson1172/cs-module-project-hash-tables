@@ -1,6 +1,11 @@
 def no_dups(s):
-    s = s.split(' ')
-    
+    d = {}
+    for i in s.split():
+        d[i] = None
+    print(d)
+    return ' '.join(d.keys())
+
+
 if __name__ == "__main__":
     print(no_dups(""))
     print(no_dups("hello"))
